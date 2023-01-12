@@ -40,7 +40,6 @@ bot.onText(/\/save (.+)/, (msg, match) => {
         text = words[1];
         url = '';
     }
-
     const saveM = async (command) => {
         const _data = {
             "key": command,    //휘인
@@ -53,33 +52,46 @@ bot.onText(/\/save (.+)/, (msg, match) => {
         console.log(t)
     }
     saveM(command);
-
-    // const updateM = async (command) => {
-    //     const t = await chatBot.updateMany({
-    //         key: { $eq: command }
-    //     }, {
-    //         // $set: { "url": "http://daum.net" }
-    //         $set: {
-    //             "text": text,
-    //             "url": url,
-    //             "albumId": albumId
-    //         }
-    //     }, {
-    //         upsert: true,
-    //         multi: true,
-    //         new: true
-    //     }).lean()
-    //     console.log(t)
-    // }
-    // updateM()
+    const updateM = async (command) => {
+        const t = await chatBot.updateMany({
+            key: { $eq: command }
+        }, {
+            // $set: { "url": "http://daum.net" }
+            $set: {
+                "text": text,
+                "url": url,
+                // "albumId": albumId
+            }
+        }, {
+            upsert: true,
+            multi: true,
+            new: true
+        }).lean()
+        console.log(t)
+    }
+    updateM()
 });
 // Listen for any kind of message. There are different kinds of
 // messages.
 bot.on('message', (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
+    const caption = msg.caption;
 
-    // send a message to the chat acknowledging receipt of their message
+    if (caption) {
+        albumId = msg.photo[0].file_id
+        const saveImage = async (caption) => {
+            const _data = {
+                "key": caption,
+                "albumId": albumId  //이미지
+            }
+            const new_chatBot = new chatBot(_data);
+            const t = await new_chatBot.save();
+            console.log(t)
+        }
+        saveImage(caption);
+    }
+
     const findM = async (command) => {
         const t = await chatBot.find(
             {
@@ -100,10 +112,6 @@ bot.on('message', (msg) => {
     }
     findM(text);
 
-    // console.log(msg);
-    // if (msg.caption) {
-
-    //     albumId = photo.file_id
-    // }
+    console.log(msg);
 });
 
