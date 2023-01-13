@@ -140,20 +140,112 @@ bot.on("message", (msg) => {
       text = words[2];
       url = "";
     }
-    const { mongoose, chatBot } = require("./DB_CRUD_chatBot.js");
-    const saveM = async () => {
-      const _data = {
-        key: keyword,
-        text: text,
-        url: url,
-        imageId: imageId,
-      };
-      // console.log(_data)
-      const new_chatBot = new chatBot(_data);
-      const t = await new_chatBot.save();
-      console.log(t);
+    let words_loaded;
+    const findM = async (word) => {
+      const { mongoose, chatBot } = require("./DB_CRUD_chatBot.js");
+      const t = await chatBot
+        .find({
+          key: { $eq: word },
+        })
+        .lean();
+      // console.log(t)
+      words_loaded = t[0];
+      console.log(words_loaded);
     };
-    saveM();
+    findM(keyword).then((keyword) => {
+      if ((keyword = words_loaded.key)) {
+        if (words_loaded.text) {
+          const { mongoose, chatBot } = require("./DB_CRUD_chatBot.js");
+          const main = async () => {
+            const t = await chatBot
+              .updateMany(
+                {
+                  key: {
+                    $eq: keyword,
+                  },
+                },
+                {
+                  $set: {
+                    text: text,
+                  },
+                },
+                {
+                  upsert: true,
+                  multi: true,
+                  new: true,
+                }
+              )
+              .lean();
+          };
+          main();
+        }
+        if (words_loaded.url) {
+          const { mongoose, chatBot } = require("./DB_CRUD_chatBot.js");
+          const main = async () => {
+            const t = await chatBot
+              .updateMany(
+                {
+                  key: {
+                    $eq: keyword,
+                  },
+                },
+                {
+                  $set: {
+                    url: url,
+                  },
+                },
+                {
+                  upsert: true,
+                  multi: true,
+                  new: true,
+                }
+              )
+              .lean();
+          };
+          main();
+        }
+        if (words_loaded.imageId) {
+          const { mongoose, chatBot } = require("./DB_CRUD_chatBot.js");
+          const main = async () => {
+            const t = await chatBot
+              .updateMany(
+                {
+                  key: {
+                    $eq: keyword,
+                  },
+                },
+                {
+                  $set: {
+                    imageId: imageId,
+                  },
+                },
+                {
+                  upsert: true,
+                  multi: true,
+                  new: true,
+                }
+              )
+              .lean();
+          };
+          main();
+        }
+      } else {
+        const { mongoose, chatBot } = require("./DB_CRUD_chatBot.js");
+        const saveM = async () => {
+          const _data = {
+            key: keyword,
+            text: text,
+            url: url,
+            imageId: imageId,
+          };
+          // console.log(_data)
+          const new_chatBot = new chatBot(_data);
+          const t = await new_chatBot.save();
+          console.log(t);
+        };
+        saveM();
+      }
+    });
   }
   //                                                   @@ '저장해'로 저장하기 끝 @@
 
