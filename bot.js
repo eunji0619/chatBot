@@ -1,3 +1,4 @@
+const { transformBind } = require("@vue/compiler-core");
 const TelegramBot = require("node-telegram-bot-api");
 require("dotenv").config();
 
@@ -56,6 +57,7 @@ bot.onText(/\/translate (.+)/, (msg, match) => {
 bot.on("message", (msg) => {
   const chatId = msg.chat.id;
 
+  //로또
   if (msg.text == "로또") {
     const axios = require("axios"); //리퀘스트용도로 사용
     const cheerio = require("cheerio"); //선택자로 필요한 정보만 추출
@@ -89,6 +91,7 @@ bot.on("message", (msg) => {
     });
   }
 
+  //식단
   if (msg.text == "식단") {
     const axios = require("axios"); //리퀘스트용도로 사용
     const cheerio = require("cheerio"); //선택자로 필요한 정보만 추출
@@ -123,6 +126,68 @@ bot.on("message", (msg) => {
           bot.sendMessage(chatId, `오늘의 메뉴는 [${menu}] 입니다.`);
         }
       }
+    });
+  }
+
+  //삼성전자 주식
+  if (msg.text == "삼성전자") {
+    const axios = require("axios"); //리퀘스트용도로 사용
+    const cheerio = require("cheerio"); //선택자로 필요한 정보만 추출
+
+    const url = "https://finance.naver.com/item/main.nhn?code=005930";
+
+    let today_stock = [];
+    let stock = [];
+
+    axios.get(url).then((res) => {
+      let $ = cheerio.load(res.data);
+
+      $(".no_today > .no_up > span").each(function () {
+        today_stock.push($(this).text());
+      });
+
+      stock.push(today_stock[0]);
+      console.log(stock);
+
+      let today = new Date();
+
+      const date = today.toLocaleDateString("ko-kr");
+      console.log(date);
+      // const month = date.getMonth() + 1;
+      // const day = date.getDate();
+
+      bot.sendMessage(chatId, `${date}의 삼성전자 주식은 ${stock} 입니다.`);
+    });
+  }
+
+  //영화순위
+  if (msg.text == "영화순위") {
+    const axios = require("axios"); //리퀘스트용도로 사용
+    const cheerio = require("cheerio"); //선택자로 필요한 정보만 추출
+
+    const url = "https://movie.naver.com/movie/sdb/rank/rmovie.naver";
+
+    let movie = [];
+
+    axios.get(url).then((res) => {
+      let $ = cheerio.load(res.data);
+
+      $(".tit3 > a").each(function () {
+        movie.push($(this).text());
+      });
+
+      let movies = "";
+
+      movie.forEach((v, i) => {
+        if (i < 10) {
+          movies += `${i + 1}위:${v}\n`;
+        }
+      });
+
+      let today = new Date();
+      const date = today.toLocaleDateString("ko-kr");
+
+      bot.sendMessage(chatId, `${date} 영화순위 \n${movies}`);
     });
   }
 
