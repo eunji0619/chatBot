@@ -10,5 +10,5 @@ mongoose
   .connect(mongodbURL, { useNewUrlParser: true })
   .then(() => console.log('connection succesful'))
   .catch((err) => console.error(err))
-const Photo = require('./save/photo.js')
-module.exports = { mongoose, Photo }
+const chatBot = require('./save/chatbot.js')
+module.exports = { mongoose, chatBot }
